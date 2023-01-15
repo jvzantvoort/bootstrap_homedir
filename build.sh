@@ -21,7 +21,7 @@ SCREENWIDTH="$(tput cols)"
 SCREENWIDTH="$((SCREENWIDTH-(SCREENWIDTH%40)))"
 [[ "${SCREENWIDTH}" -lt 80 ]] && SCREENWIDTH=80
 
-MSG_PADSTR_LEN=$((SCREENWIDTH-12))
+MSG_PADSTR_LEN="${SCREENWIDTH}"
 MSG_FORMAT="%-${SCREENWIDTH}s [ %s%-7s%s ]\n"
 unset SCREENWIDTH
 
@@ -93,9 +93,9 @@ function print_msg()
   local state=$1; shift
   local msg="$*"
   local pad
-  pad="${#msg}"
-  pad="$((MSG_PADSTR_LEN-pad))"
-  padstr="$(strrep "${pad}")"
+  pad="${#msg}" # length of the string
+  pad="$((MSG_PADSTR_LEN-pad))" # subtract it from then screen width
+  padstr="$(strrep "${pad}")" # create padding
 
   #shellcheck disable=SC2059
   printf "${MSG_FORMAT}" "$msg ${padstr}" "${color}" "${state}" "${COLOR_RESET}"
@@ -138,6 +138,12 @@ function retv_fatal()
 }
 
 function die() { retv_fatal 1 "FATAL: $1"; }
+
+function err127()
+{
+  which "$1" >/dev/null 2>&1
+  retv_fatal "$?" "Command $1 is available"
+}
 
 # }}}
 
@@ -216,6 +222,11 @@ function __makeself()
 #                                    Main                                      #
 #------------------------------------------------------------------------------#
 
+err127 makeself
+err127 git
+err127 curl
+err127 rsync
+
 __mkstaging_area
 pushd "${STAGING_AREA}" >/dev/null 2>&1 || die "chdir: ${STAGING_AREA}"
 
@@ -225,6 +236,9 @@ do
 done
 
 rsync -av --delete "${STAGING_AREA}/export/vim/bundle/" "${C_SCRIPTDIR}/src/vim/bundle/"
+
+curl -fLo "${C_SCRIPTDIR}/src/vim/autoload/plug.vim" --create-dirs \
+  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 __makeself
 

@@ -1,0 +1,89 @@
+#!/bin/bash
+#===============================================================================
+#
+#         FILE:  main
+#
+#  DESCRIPTION:  Main script for the tool
+#
+#       AUTHOR:  jvzantvoort (John van Zantvoort), john@vanzantvoort.org
+#      CREATED:  2023-01-15
+#
+#===============================================================================
+# Variables: switchable {{{
+declare DEBUG="no"
+# }}}
+
+# Constants: base {{{
+C_SCRIPTPATH="$(readlink -f "$0")"
+C_SCRIPTDIR="$(dirname "${C_SCRIPTPATH}")"
+C_BUILDNAME="bootstrap_homedir"
+readonly C_SCRIPTPATH
+readonly C_SCRIPTDIR
+readonly C_BUILDNAME
+# }}}
+
+if [[ ! -r "${C_SCRIPTDIR}/functions.sh" ]]
+then
+  printf "Cannot access shared functions\n\n"
+  exit 1
+fi
+source "${C_SCRIPTDIR}/functions.sh"
+
+function list_files()
+{
+  find "${C_SCRIPTDIR}" -maxdepth 1 -mindepth 1 -type f -name '*.sh' -not -name 'functions.sh'
+}
+
+function print_menu()
+{
+  echo ""
+  echo "Menu"
+  echo ""
+  list_files | \
+    while read -r target
+    do
+      bn="$(basename "${target}" .sh)"
+      descr="$(awk -F':' '/Description/ { print $2 }' "${target}"|sed 's/^\ *//')"
+      printf "  %-16s %s\n" "${bn}" "${descr}"
+    done
+  echo ""
+  echo ""
+}
+
+function list_options()
+{
+  list_files | while read -r target
+  do
+    basename "${target}" .sh
+  done
+  echo "list"
+  echo "quit"
+}
+
+#------------------------------------------------------------------------------#
+#                                    Main                                      #
+#------------------------------------------------------------------------------#
+
+clear
+
+print_menu
+
+select opt in $(list_options)
+do
+  if [[ "${opt}" == "quit" ]]
+  then
+    echo "bye !"
+    break
+  elif [[ "${opt}" == "list" ]]
+  then
+    print_menu
+  else
+    ./"${opt}.sh"
+  fi
+done
+
+#------------------------------------------------------------------------------#
+#                                  The End                                     #
+#------------------------------------------------------------------------------#
+
+# vim: foldmethod=marker
