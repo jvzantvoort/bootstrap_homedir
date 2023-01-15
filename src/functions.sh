@@ -43,6 +43,17 @@ readonly COLOR_RESET
 # }}}
 
 # Functions: messages {{{
+function logos()
+{
+  echo "ICAgIF9fICAgICAgICAgICAgICAgIF9fICAgICAgIF9fICAgICAgICAgICAgICAgICAKICAgLyAv
+XyAgX19fXyAgX19fXyAgLyAvX19fX19fLyAvX19fX19fX19fXyBfX19fXyAKICAvIF9fIFwvIF9f
+IFwvIF9fIFwvIF9fLyBfX18vIF9fLyBfX18vIF9fIGAvIF9fIFwKIC8gL18vIC8gL18vIC8gL18v
+IC8gL18oX18gICkgL18vIC8gIC8gL18vIC8gL18vIC8KL18uX19fL1xfX19fL1xfX19fL1xfXy9f
+X19fL1xfXy9fLyAgIFxfXyxfLyAuX19fLyAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAvXy8gICAgICAK" | base64 -d
+}
+
+
 #shellcheck disable=SC2034
 function strrep() { for x in $(seq 1 "${1}"); do printf "-"; done; }
 
