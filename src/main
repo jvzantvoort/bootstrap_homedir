@@ -31,57 +31,69 @@ source "${C_SCRIPTDIR}/functions.sh"
 
 function list_files()
 {
-  find "${C_SCRIPTDIR}" -maxdepth 1 -mindepth 1 -type f -name '*.sh' -not -name 'functions.sh'
+  find "${C_SCRIPTDIR}" -maxdepth 1 -mindepth 1 -type f -name '*.sh' \
+    -not -name 'functions.sh' | sort
 }
 
-function print_menu()
+function get_descr()
 {
-  echo ""
-  echo "Menu"
-  echo ""
-  list_files | \
-    while read -r target
-    do
-      bn="$(basename "${target}" .sh)"
-      descr="$(awk -F':' '/Description/ { print $2 }' "${target}"|sed 's/^\ *//')"
-      printf "  %-16s %s\n" "${bn}" "${descr}"
-    done
-  echo ""
-  echo ""
+  awk -F':' '/Description/ { print $2 }' "${1}" |sed 's/^\ *//'
 }
 
-function list_options()
+function __is_digit()
 {
-  list_files | while read -r target
+  local indx="$1"
+  re='^[0-9]+$'
+  [[ "$indx" =~ $re ]] && return 0
+  return 1
+}
+
+function main()
+{
+  clear
+  logos
+
+  menu_items=($(list_files))
+  menu_item_no=${#menu_items[@]}
+
+  for (( i=0; i<${menu_item_no}; i++ ));
   do
-    basename "${target}" .sh
+    item="${menu_items[$i]}"
+    name="$(basename "${item}" .sh)"
+    descr="$(get_descr "${item}")"
+    printf "%2d) %-24s %s\n" "$((i+1))" "${name}" "${descr}"
   done
-  echo "list"
-  echo "quit"
+
+  printf "\n\n q) quit\n"
+
+  printf "\n  answer: "
+
+  read -n 1 answer
+
+  printf "\n"
+
+  if __is_digit "${answer}"
+  then
+    answer="${menu_items[$((answer-1))]}"
+  fi
+
+  case "${answer}" in
+    q) exit;;
+  esac
+
+  if [[ -x "${answer}" ]]
+  then
+    "${answer}"
+  fi
+
+  main
 }
 
 #------------------------------------------------------------------------------#
 #                                    Main                                      #
 #------------------------------------------------------------------------------#
 
-clear
-logos
-
-print_menu
-
-select opt in $(list_options)
-do
-  if [[ "${opt}" == "quit" ]]
-  then
-    echo "bye !"
-    break
-  elif [[ "${opt}" == "list" ]]
-  then
-    print_menu
-  else
-    ./"${opt}.sh"
-  fi
-done
+main
 
 #------------------------------------------------------------------------------#
 #                                  The End                                     #
