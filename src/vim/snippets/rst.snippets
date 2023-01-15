@@ -1,0 +1,55 @@
+snippet note
+	.. note:: ${1:note}
+
+snippet header
+	:filename:    `Filename()`
+	:author:      `g:author`
+	:date:        `strftime("%Y-%m-%d")`
+	:tags:        ${1:tags}
+	:description: ${2:description}
+
+snippet comment
+	.. ${1:comment}
+
+snippet codeblock
+	.. code-block:: ${1:python}
+	
+	  def foo()
+	
+
+snippet ref
+	.. _${1:refname}:
+
+snippet literalinclude
+	.. literalinclude:: ${1:filename}
+	   :language: ${2:bash}
+	   :caption: ${2:caption}
+
+snippet image
+	.. image:: ${1:imagename.jpg}
+	   :height: 200px
+	   :width: 200px
+	   :alt: ${2:alt text}
+	   :align: right
+
+snippet term
+	:term:\`${2:title}<${1:term}>\`
+
+snippet table
+	.. list-table:: Frozen Delights!
+	   :widths: 15 10 30
+	   :header-rows: 1
+	
+	   * - Treat
+	     - Quantity
+	     - Description
+	   * - Albatross
+	     - 2.99
+	     - On a stick!
+	   * - Crunchy Frog
+	     - 1.49
+	     - If we took the bones out, it wouldn't be
+	       crunchy, now would it?
+	   * - Gannet Ripple
+	     - 1.99
+	     - On a stick!

@@ -1,0 +1,185 @@
+snippet header
+	#!/usr/bin/perl
+	#===============================================================================
+	#
+	#         FILE:  ${1:scriptname}
+	#
+	#        USAGE:  
+	#
+	#  DESCRIPTION:  ${2:description}
+	#
+	#      OPTIONS:  ---
+	# REQUIREMENTS:  ---
+	#         BUGS:  ---
+	#        NOTES:  ---
+	#       AUTHOR:  John van Zantvoort (jydawg), <john@vanzantvoort.org>
+	#      CREATED:
+	#     REVISION:
+	#===============================================================================
+	use strict;
+	use warnings;
+
+snippet main
+
+	#===============================================================================
+	# MAIN
+	#===============================================================================
+	$0
+	#===============================================================================
+	# END
+	#===============================================================================
+	__END__
+
+snippet mkdirp
+	use File::Spec;
+	
+	#===  FUNCTION  ================================================================
+	#         NAME:  mkdirp
+	#  DESCRIPTION:  pure-perl version of "mkdir -p"
+	# PARAMETER  1:  STRING: path
+	#      RETURNS:  nothing
+	#===============================================================================
+	sub mkdirp
+	{
+	    my $path = shift;
+	    my @dirs =  File::Spec->splitdir( $path );
+	    my $tpath = undef;
+	
+	    foreach my $dir ( @dirs )
+	    {
+	        $tpath = File::Spec->catdir( $tpath, $dir );
+	        if( ! -d "$tpath" )
+	        {
+	            unless( mkdir( "$tpath" ) )
+	            {
+	                die( "cannot create $tpath: $!" );
+	            }
+	        }
+	    }
+	}
+
+snippet swc
+	#===  FUNCTION  ================================================================
+	#         NAME:  SystemWithCheck
+	#  DESCRIPTION:  Do a system call with a bunch of checks.
+	# PARAMETER  1:  ARRAY: command with options
+	#      RETURNS:  BOOL: 1 = oke, undef = error
+	#===============================================================================
+	sub SystemWithCheck
+	{
+	    my ( @cmnd ) = @_;
+	    my $msg_string = join( " ", "SystemWithCheck", @cmnd );
+	    if( system( @cmnd ) != 0 )
+	    {
+	        if( $? == -1 )
+	        {
+	           print( "$msg_string: failed to execute: $!\n" );
+	        }
+	        elsif( $? & 127 )
+	        {
+	            printf( "%s: child died with signal %d, %s coredump\n",
+	                $msg_string, ($? & 127), ($? & 128) ? 'with' : 'whitout' );
+	        }
+	        else
+	        {
+	            printf( "%s: child exited with value %d\n", $msg_string, $? >> 8 );
+	        }
+	        return ( undef );
+	    }
+	    else
+	    {
+	        return ( 1 );
+	    }
+	}
+
+snippet rini
+	#===  FUNCTION  ================================================================
+	#         NAME:  read_ini
+	#  DESCRIPTION:  a simple inifile parser, returns a double nested hash
+	#   PARAMETERS:  STRING, filename
+	#      RETURNS:  hash
+	#===============================================================================
+	sub read_ini
+	{
+	    my $file = shift;
+	    local $/ = undef;
+	    my %retv;
+	    my $ns   = '_';
+	    unless( open( CFG, $file ) )
+	    {
+	        printf "ERROR: read_ini: cannot open file: %s, %s\n", $file, $!;
+	        return undef;
+	    }
+	    my $contents = <CFG>;
+	    close( CFG );
+	    foreach ( split /(?:\015{1,2}\012|\015|\012)/, $contents )
+	    {
+	        next if /^\s*(?:\#|\;|$)/;
+	        if ( /^\s*\[(.+?)\]\s*$/ ) { $ns = $${0:1}; next; }
+	        if ( /^\s*([^=]+?)\s*=\s*(.*?)\s*$/ )
+	        {
+	            $retv{ $ns }{ $${0:1} } = $${0:2};
+	            next;
+	        }
+	        printf "ERROR: read_ini: error do not know %s\n", $_;
+	    }
+	    return( %retv );
+	} # end: read_ini
+
+snippet wget
+	use IO::Socket;
+	
+	#===  FUNCTION  ================================================================
+	#         NAME:  wget
+	#  DESCRIPTION:  a simple wget based on IO::Socket
+	#   PARAMETERS:  STRING, hostname
+	#                INT, portnumber
+	#                STRING, path on the server
+	#      RETURNS:  the contents of the retrieved file or nothing
+	#===============================================================================
+	sub wget()
+	{
+	    my( $host, $port, $path) = @_;
+	    local($^W) = 0;
+	    my $sock = IO::Socket::INET->new(PeerAddr => $host,
+	                            PeerPort => $port,
+	                        Proto    => 'tcp',
+	                        Timeout  => 60) || return undef;
+	
+	    $sock->autoflush;
+	    my $netloc = $host;
+	    $netloc .= ":$port" if $port != 80;
+	    print $sock join("\015\012" =>
+	                "GET $path HTTP/1.0",
+	                "Host: $netloc",
+	                "User-Agent: pwget/1.1",
+	                "", "");
+	    my $buf = "";
+	    my $n;
+	    1 while $n = sysread($sock, $buf, 8*1024, length($buf));
+	    return undef unless defined($n);
+	
+	    if ($buf =~ m,^HTTP/\d+\.\d+\s+(\d+)[^\012]*\012,)
+	    {
+	        my $code = $${0:1};
+	        if ($code =~ /^30[1237]/ && $buf =~ /\012Location:\s*(\S+)/i)
+	        {
+	            print( "error: the wanted to redirect me to $${0:1}" );
+	            return undef; # we don't do redirects
+	        }
+	        return undef unless $code =~ /^2/;
+	        $buf =~ s/.+?\015?\012\015?\012//s;  # zap header
+	    }
+	    return $buf;
+	} # end: wget
+
+snippet sfind
+	use File::Find;
+	File::Find::find({wanted => sub {
+	    my ($dev,$ino,$mode,$nlink,$uid,$gid);
+	    (($dev,$ino,$mode,$nlink,$uid,$gid) = lstat($_)) &&
+	    -f _ &&
+	    /^.*\.txt\z/si &&
+	    push @filenames, $File::Find::name;
+	}}, '.');
+

@@ -1,0 +1,52 @@
+snippet header
+	#!/bin/bash
+	# ---------------------------------------------------------------------------- #
+	#
+	#         FILE:  `Filename()`
+	#
+	#        USAGE:  
+	#
+	#  DESCRIPTION:  ${1:description}
+	#
+	#       AUTHOR:  `g:author`, <`g:mailaddress`>
+	#
+	# ---------------------------------------------------------------------------- #
+	
+	readonly CONST_SCRIPTPATH=$(readlink -f "\$0)"
+	readonly CONST_SCRIPTNAME=$(basename "$CONST_SCRIPTPATH" .sh)
+	readonly CONST_SCRIPTDIR=$(dirname "$CONST_SCRIPTPATH")
+	readonly CONST_FACILITY="local0"
+	declare -xr LANG="C"
+	
+snippet main
+	#------------------------------------------------------------------------------#
+	#                                    Main                                      #
+	#------------------------------------------------------------------------------#
+	$1
+	#------------------------------------------------------------------------------#
+	#                                  The End                                     #
+	#------------------------------------------------------------------------------#
+snippet mkst
+	function mkstaging_area()
+	# ------------------------------------------------------------------------------
+	#         NAME:  mkstaging_area
+	#  DESCRIPTION:  Creates a temporary staging area and set the variable
+	#                $STAGING_AREA to point to it
+	#   PARAMETERS:  STRING, mktemp template (optional)
+	#      RETURNS:  0, oke
+	#                1, not oke
+	# ------------------------------------------------------------------------------
+	function mkstaging_area()
+	{
+	  local template
+	  local retv
+	
+	  template="/tmp/stage.XXXXXXXX"
+	  retv="0"
+	
+	  STAGING_AREA=$(mktemp -d ${template})
+	  retv=$?
+	
+	  [[ $retv == 0 ]] || script_exit "mkstaging_area failed $retv" "${retv}"
+	
+	} # end: mkstaging_area

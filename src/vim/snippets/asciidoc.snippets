@@ -1,0 +1,27 @@
+
+snippet header
+	:Author:      ${1:author}
+	:Date:        ${2:date}
+	:keywords:    ${3:keywords}
+	:description: ${4:description}
+
+= ${5:title}
+
+snippet userstory
+	== Story: ${1:shortname}
+	
+	_Story narrative_
+	
+	* As a *${2:role}*
+	* I want ${3:feature}
+	* So that ${4:benefit}
+	
+	_Acceptance Criteria_
+	
+	* Given ${5:context}
+	* When ${6:events}
+	* Then ${7:outcome}
+
+snippet image
+	image::${1:imagepath}[${2:alt text}]
+
