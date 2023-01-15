@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Description: Setup golang development libraries
+# Description: Setup vim configuration
 
 # Variables: switchable {{{
 declare DEBUG="no"
