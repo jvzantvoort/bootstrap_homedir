@@ -148,6 +148,32 @@ function __mkstaging_area()
 
 } # end: __mkstaging_area
 
+function __has_mode()
+{
+  local mode="$1"; shift
+  local target="$1"; shift
+  local msg
+  local c_mode
+
+  msg="${target} exists and has mode ${mode}"
+
+  if [[ ! -e "${target}" ]]
+  then
+    test_result 1 "${msg}"
+    return 1
+  fi
+
+  c_mode=$(stat -c %a "${target}")
+
+  if [[ "${mode}" == "${c_mode}" ]]
+  then
+    test_result 0 "${msg}"
+  else
+    test_result 2 "${msg}"
+    return 2
+  fi
+}
+
 # }}}
 
 # vim: foldmethod=marker
